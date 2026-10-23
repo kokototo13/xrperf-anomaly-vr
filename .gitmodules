@@ -10,7 +10,3 @@
 	path = external/NVIDIAImageScaling
 	url = https://github.com/NVIDIAGameWorks/NVIDIAImageScaling.git
 	shallow = true
-[submodule "external/nvapi"]
-	path = external/nvapi
-	url = https://github.com/NVIDIA/nvapi.git
-	shallow = true

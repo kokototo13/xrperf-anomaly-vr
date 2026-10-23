@@ -33,7 +33,6 @@
 #include "gpu_timer.h"
 #include "log.h"
 #include "upscaler.h"
-#include "vrs.h"
 
 using namespace xrperf;
 
@@ -256,12 +255,6 @@ void UpdateFrameStats(bool hasLayers) {
     if (g.gpuTimer.TakeWindow(&gameAvg, &gameWorst))
         Log("  game GPU: avg %.2f ms, worst %.2f ms per frame (budget %.2f ms)", gameAvg, gameWorst,
             g.displayPeriodMs);
-    if (g.cfg.vrsEnabled) {
-        uint64_t vrsBinds, allBinds;
-        Vrs::TakeStats(&vrsBinds, &allBinds);
-        Log("  VRS: %llu of %llu render target binds per window at reduced rate",
-            static_cast<unsigned long long>(vrsBinds), static_cast<unsigned long long>(allBinds));
-    }
     double fsrAvg, fsrWorst;
     if (g.upscaling && g.upscaler.TakeGpuStats(&fsrAvg, &fsrWorst))
         Log("  %s GPU cost: avg %.3f ms, worst %.3f ms per frame (both eyes)", UpscalerName(), fsrAvg, fsrWorst);
@@ -335,7 +328,6 @@ bool UpscaleFrame(const XrFrameEndInfo* info, std::vector<const XrCompositionLay
     // Each output swapchain is acquired once per frame, even if both eyes share a game swapchain
     std::unordered_map<XrSwapchain, uint32_t> acquiredOutputs;
     bool patched = false;
-    Vrs::Disable(); // the game may have left VRS on; our passes must be full rate
     g.upscaler.BeginFrame();
 
     layers.assign(info->layers, info->layers + info->layerCount);
@@ -412,14 +404,6 @@ bool UpscaleFrame(const XrFrameEndInfo* info, std::vector<const XrCompositionLay
     return patched;
 }
 
-VrsSettings VrsFromConfig(const Config& c) {
-    VrsSettings v;
-    v.enabled = c.vrsEnabled;
-    v.inner = c.vrsInner;
-    v.outer = c.vrsOuter;
-    return v;
-}
-
 FILETIME ConfigWriteTime() {
     WIN32_FILE_ATTRIBUTE_DATA attr{};
     GetFileAttributesExW(g.cfg.path.c_str(), GetFileExInfoStandard, &attr);
@@ -440,22 +424,15 @@ void CheckConfigReload() {
     g.configWriteTime = t;
 
     Config fresh = LoadConfig();
-    if (fresh.upscaler == g.cfg.upscaler && fresh.sharpness == g.cfg.sharpness &&
-        fresh.vrsEnabled == g.cfg.vrsEnabled && fresh.vrsInner == g.cfg.vrsInner && fresh.vrsOuter == g.cfg.vrsOuter)
+    if (fresh.upscaler == g.cfg.upscaler && fresh.sharpness == g.cfg.sharpness)
         return;
     g.cfg.upscaler = fresh.upscaler;
     g.cfg.sharpness = fresh.sharpness;
-    g.cfg.vrsEnabled = fresh.vrsEnabled;
-    g.cfg.vrsInner = fresh.vrsInner;
-    g.cfg.vrsOuter = fresh.vrsOuter;
-    Vrs::SetSettings(VrsFromConfig(g.cfg));
-    Log("config reloaded: upscaler %s, sharpness %.2f, foveated %s (%.2f / %.2f)%s", UpscalerName(), g.cfg.sharpness,
-        g.cfg.vrsEnabled ? "on" : "off", g.cfg.vrsInner, g.cfg.vrsOuter,
+    Log("config reloaded: upscaler %s, sharpness %.2f%s", UpscalerName(), g.cfg.sharpness,
         fresh.renderScale != g.cfg.renderScale ? " (render_scale change applies on next game start)" : "");
 }
 
 void ShutdownUpscaling() {
-    Vrs::Shutdown();
     g.gpuTimer.Shutdown();
     g.renderThread = 0;
     g.loggedBeginThread = false;
@@ -516,10 +493,6 @@ XrResult XRAPI_CALL Layer_xrCreateSession(XrInstance instance, const XrSessionCr
                 g.device = binding->device;
                 g.device->AddRef();
                 g.gpuTimer.Init(g.device);
-                // Installed even when off, so VRS_ON.bat can switch it on in game
-                bool vrs = Vrs::Init(g.device);
-                Vrs::SetSettings(VrsFromConfig(g.cfg));
-                Log("foveated rendering (VRS): %s", !vrs ? "unavailable" : g.cfg.vrsEnabled ? "on" : "off");
                 // Set up whenever the game renders below native, even with upscaler=none,
                 // so FSR / NIS can be switched on later without restarting the game
                 if (g.cfg.renderScale < 1.0f) {
@@ -553,9 +526,6 @@ XrResult XRAPI_CALL Layer_xrCreateSwapchain(XrSession session, const XrSwapchain
         SwapchainInfo& sc = g.swapchains[*swapchain];
         sc.info = *createInfo;
         sc.info.next = nullptr;
-        // The game renders each eye at its swapchain size; VRS targets render targets of that size
-        if (IsEyeColorSwapchain(*createInfo))
-            Vrs::SetEyeSize(createInfo->width, createInfo->height);
         if (g.upscaling && IsEyeColorSwapchain(*createInfo)) {
             sc.images = EnumerateImages(*swapchain);
             CreateOutputSwapchain(session, sc);
@@ -684,15 +654,11 @@ XrResult XRAPI_CALL Layer_xrEndFrame(XrSession session, const XrFrameEndInfo* fr
     UpdateFrameStats(frameEndInfo->layerCount > 0);
 
     CheckConfigReload();
-    if (GetCurrentThreadId() == g.renderThread)
-        Vrs::Reassert();
     if (g.upscaling && g.cfg.upscaler != Config::Upscaler::None && frameEndInfo->layerCount > 0) {
         std::vector<const XrCompositionLayerBaseHeader*> layers;
         std::vector<XrCompositionLayerProjection> projections;
         std::vector<std::vector<XrCompositionLayerProjectionView>> views;
-        bool upscaled = UpscaleFrame(frameEndInfo, layers, projections, views);
-        Vrs::Reassert(); // the upscaler's context state swap drops the VRS hook
-        if (upscaled) {
+        if (UpscaleFrame(frameEndInfo, layers, projections, views)) {
             XrFrameEndInfo patched = *frameEndInfo;
             patched.layers = layers.data();
             return g.nextEndFrame(session, &patched);
@@ -703,7 +669,6 @@ XrResult XRAPI_CALL Layer_xrEndFrame(XrSession session, const XrFrameEndInfo* fr
 
 XrResult XRAPI_CALL Layer_xrDestroyInstance(XrInstance instance) {
     Log("xrDestroyInstance");
-    Vrs::Shutdown(); // normally already done by xrDestroySession
     PFN_xrDestroyInstance next = g.nextDestroyInstance;
     g.instance = XR_NULL_HANDLE;
     g.hooked = false;

@@ -57,11 +57,6 @@ Config LoadConfig() {
                    : upscaler == L"none" ? Config::Upscaler::None
                                          : Config::Upscaler::Fsr;
     cfg.sharpness = std::clamp(ReadFloat(f, L"resolution", L"sharpness", 0.75f), 0.0f, 1.0f);
-
-    cfg.vrsEnabled = GetPrivateProfileIntW(L"foveated", L"enabled", 0, f.c_str()) != 0;
-    cfg.vrsInner = std::clamp(ReadFloat(f, L"foveated", L"inner_radius", 0.55f), 0.1f, 2.0f);
-    cfg.vrsOuter = std::clamp(ReadFloat(f, L"foveated", L"outer_radius", 0.80f), cfg.vrsInner, 2.0f);
-
     std::wstring list = ReadString(f, L"general", L"processes", L"AnomalyDX11");
     size_t start = 0;
     while (start <= list.size()) {

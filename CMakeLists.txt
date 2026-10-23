@@ -37,13 +37,11 @@ add_library(xrperf_layer SHARED
     src/log.cpp
     src/upscaler.cpp
     src/gpu_timer.cpp
-    src/vrs.cpp
     ${SHADER_HEADERS}
 )
-set(NVAPI_DIR ${CMAKE_SOURCE_DIR}/external/nvapi)
-target_include_directories(xrperf_layer PRIVATE ${OPENXR_INCLUDE} ${FSR_INCLUDE} ${NIS_INCLUDE} ${SHADER_OUT} ${NVAPI_DIR})
+target_include_directories(xrperf_layer PRIVATE ${OPENXR_INCLUDE} ${FSR_INCLUDE} ${NIS_INCLUDE} ${SHADER_OUT})
 target_compile_definitions(xrperf_layer PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
-target_link_libraries(xrperf_layer PRIVATE d3d11 dxgi ${NVAPI_DIR}/amd64/nvapi64.lib)
+target_link_libraries(xrperf_layer PRIVATE d3d11 dxgi)
 
 # Small console app that creates an OpenXR instance through the game's loader,
 # so the layer can be checked without launching the game

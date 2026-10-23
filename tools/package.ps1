@@ -11,14 +11,13 @@ New-Item -ItemType Directory -Force "$dist\tools", "$dist\licenses" | Out-Null
 
 Copy-Item "$out\xrperf_layer.dll", "$out\xrperf_layer.json" $dist
 Copy-Item "$root\manifest\xrperf.ini" $dist
-Copy-Item "$root\FSR.bat", "$root\NIS.bat", "$root\OFF.bat", "$root\VRS_ON.bat", "$root\VRS_OFF.bat" $dist
+Copy-Item "$root\FSR.bat", "$root\NIS.bat", "$root\OFF.bat" $dist
 Copy-Item "$root\package\install.bat", "$root\package\uninstall.bat", "$root\package\README.txt", "$root\package\README.ru.txt" $dist
 Copy-Item "$root\LICENSE" "$dist\licenses\xrperf.txt"
-Copy-Item "$root\tools\set_upscaler.ps1", "$root\tools\set_vrs.ps1" "$dist\tools"
+Copy-Item "$root\tools\set_upscaler.ps1" "$dist\tools"
 
 Copy-Item "$root\external\FidelityFX-FSR\license.txt" "$dist\licenses\AMD_FidelityFX_FSR.txt"
 Copy-Item "$root\external\NVIDIAImageScaling\licence.txt" "$dist\licenses\NVIDIA_Image_Scaling.txt"
-Copy-Item "$root\external\nvapi\License.txt" "$dist\licenses\NVIDIA_NVAPI.txt"
 Copy-Item "$root\external\OpenXR-SDK\LICENSE" "$dist\licenses\OpenXR_SDK.txt"
 
 if (Test-Path $zip) { Remove-Item $zip -Force }

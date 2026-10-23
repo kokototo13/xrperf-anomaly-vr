@@ -15,11 +15,6 @@ struct Config {
     Upscaler upscaler = Upscaler::Fsr; // None: the runtime stretches the smaller image itself (bilinear)
     float sharpness = 0.75f; // RCAS, 0..1
 
-    // Fixed foveated rendering (NVIDIA VRS)
-    bool vrsEnabled = false;
-    float vrsInner = 0.55f;
-    float vrsOuter = 0.80f;
-
     std::wstring path; // where it was read from, for the log
 };
 

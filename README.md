@@ -5,35 +5,34 @@
 An OpenXR API layer that makes [S.T.A.L.K.E.R. Anomaly](https://www.moddb.com/mods/stalker-anomaly) in VR (the **VR AoE** mod, OpenXR) run faster:
 
 - **Upscaling (FSR 1 or NIS).** The game renders at 85% of the headset resolution, and the layer upscales each eye back to full resolution with AMD FidelityFX Super Resolution 1 or NVIDIA Image Scaling.
-- **Fixed foveated rendering (VRS).** On NVIDIA RTX / GTX 16xx cards, the edges of each eye are shaded at reduced rate (2×2 and 4×4 pixel blocks). The lenses already blur those edges, so the difference is hard to see.
-- **Live switching.** Double-click a `.bat` file to change the upscaler or toggle VRS while the game runs.
+- **Live switching.** Double-click a `.bat` file to change the upscaler while the game runs.
 
 It works like [openvr_fsr](https://github.com/fholger/openvr_fsr) or vrperfkit, but for OpenXR. Game and mod files are not modified.
 
 ## Results
 
-**xrperf on its own gives roughly 30–60% more performance when your GPU is the bottleneck.** If the game is limited by the CPU instead, expect less.
+**xrperf on its own gives up to ~30% more performance when your GPU is the bottleneck.** If the game is limited by the CPU instead, expect less.
 
 Measured on one system (RTX 5070 Laptop GPU, WMR headset at 2576×2520 per eye, VR AoE 0.5.0), same save and spot for every run:
 
 | xrperf feature | Measured effect |
 |---|---|
-| FSR / NIS at 77% resolution | −31% GPU time per frame; +64% FPS (34 → 55) where the GPU couldn't keep up at 90 Hz |
-| VRS foveated rendering | −27% GPU time per frame |
+| FSR / NIS at 77% resolution | −31% GPU time per frame |
+| FSR / NIS at 85% resolution (default) | less: roughly −15–20% |
 | Upscaler cost | FSR ~0.8 ms, NIS ~1.0 ms for both eyes |
 
 ### Full tuning example: xrperf plus graphics settings
 
-![Full tuning example: 25.5 ms before, 8.9 ms after](docs/results.svg)
+![Full tuning example: 25.5 ms before, 11.0 ms after](docs/results.svg)
 
 | Step | GPU time per frame |
 |---|---|
 | Native resolution, original graphics settings | 25.5 ms |
 | + FSR at 77% resolution (xrperf) | 17.5 ms |
 | + graphics settings recommended by the mod author | 9.7 ms |
-| **FSR 85% + VRS (xrperf) + MSAA 2x** | **8.9 ms** |
+| **FSR 85% (xrperf) + MSAA 2x** | **11.0 ms** |
 
-Most of this total came from the graphics settings, not from xrperf. The end result holds a steady 60 FPS with zero missed frames and MSAA on (the frame budget at 60 Hz is 16.7 ms). Your numbers will differ with other GPUs, headsets and scenes.
+Most of this total came from the graphics settings, not from xrperf. The last step spends part of the savings on image quality: MSAA 2x and a higher 85% resolution. The end result holds a steady 60 FPS (3 missed frames out of 1084) with MSAA on; the frame budget at 60 Hz is 16.7 ms. Your numbers will differ with other GPUs, headsets and scenes.
 
 ## FSR or NIS?
 
@@ -49,7 +48,7 @@ You can compare them live with `FSR.bat` / `NIS.bat`.
 - S.T.A.L.K.E.R. Anomaly with the VR AoE mod (OpenXR, DirectX 11)
 - Any OpenXR runtime (tested with SteamVR)
 - Windows 10/11, 64-bit
-- VRS needs an NVIDIA RTX or GTX 16xx GPU. On other GPUs it stays off, and upscaling still works.
+- Any DirectX 11 GPU (AMD, NVIDIA, Intel)
 
 ## Install
 
@@ -66,7 +65,6 @@ To remove it, run `uninstall.bat` and delete the folder.
 | `FSR.bat` | FSR upscaling (default) |
 | `NIS.bat` | NIS upscaling |
 | `OFF.bat` | upscaling off; native resolution from the next game start |
-| `VRS_ON.bat` / `VRS_OFF.bat` | foveated rendering on / off |
 
 Changes apply within a second. Only `render_scale` needs a game restart.
 
@@ -77,14 +75,12 @@ Changes apply within a second. Only `render_scale` needs a game restart.
 | `render_scale` | 0.85 | Share of the headset resolution the game renders. Lower is faster and softer. Applies on game start. |
 | `upscaler` | fsr | `fsr`, `nis` or `none` |
 | `sharpness` | 0.75 | Sharpening, 0 to 1 |
-| `[foveated] enabled` | 1 | VRS on/off |
-| `inner_radius` / `outer_radius` | 0.55 / 0.80 | Full rate inside the inner radius, 2×2 up to the outer one, 4×4 beyond. Raise them if you see blur at the edges. |
 
 `logs\xrperf.log` shows FPS, GPU time per frame and what the layer is doing.
 
 ## Game graphics settings
 
-The layer alone gives about −30%. The biggest single win in the results above came from the game's own graphics settings. These follow the VR AoE author's advice, plus MSAA: the mod turns TAA off in VR, so without MSAA foliage and wires shimmer badly.
+The layer alone gives up to about 30%. The biggest single win in the results above came from the game's own graphics settings. These follow the VR AoE author's advice, plus MSAA: the mod turns TAA off in VR, so without MSAA foliage and wires shimmer badly.
 
 | Setting | Set to | Why |
 |---|---|---|
@@ -137,7 +133,8 @@ The layer only attaches to `AnomalyDX11*.exe` and leaves every other OpenXR game
 
 - The layer lowers the resolution the runtime recommends to the game. For every eye swapchain the game creates, it creates a full-size swapchain of its own. In `xrEndFrame` it upscales the game's image into that swapchain and submits it instead.
 - The upscaler draws on the game's own D3D11 device. It saves and restores the whole pipeline state with `SwapDeviceContextState`, so the engine's cached state stays valid.
-- For VRS, the layer hooks `ID3D11DeviceContext::OMSetRenderTargets`. When the game binds a render target the size of an eye image, NVIDIA VRS turns on with a radial pattern; for every other target (shadow maps, small buffers, the layer's own passes) it turns off. D3D11 rewrites the context vtable on each state swap, so the hook is restored right after the upscaler runs.
+
+An earlier build also had NVIDIA VRS foveated rendering (−27% GPU time), but the mod draws its UI into an eye-sized render target, so VRS made menus and the inventory blocky. It was removed in v0.1.1.
 
 ## Building from source
 
@@ -150,7 +147,7 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 powershell -ExecutionPolicy Bypass -File tools\package.ps1
 ```
 
-The output goes to `build\out` and the release zip to `dist\`. `tools\` also has the benchmark scripts used for the numbers above (`bench.ps1`, `vrs_ab.ps1`).
+The output goes to `build\out` and the release zip to `dist\`. `tools\` also has the benchmark script used for the numbers above (`bench.ps1`).
 
 ## Credits and licenses
 
@@ -158,7 +155,6 @@ xrperf is released under the [MIT license](LICENSE). It builds on:
 
 - [AMD FidelityFX Super Resolution 1](https://github.com/GPUOpen-Effects/FidelityFX-FSR): MIT
 - [NVIDIA Image Scaling SDK](https://github.com/NVIDIAGameWorks/NVIDIAImageScaling): MIT
-- [NVIDIA NVAPI](https://github.com/NVIDIA/nvapi): MIT
 - [Khronos OpenXR SDK](https://github.com/KhronosGroup/OpenXR-SDK): Apache 2.0
 
 Thanks to the VR AoE author for the mod and the performance advice.
