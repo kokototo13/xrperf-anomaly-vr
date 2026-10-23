@@ -1,45 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="900" height="500" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 440" width="900" height="440" role="img" aria-labelledby="t d">
   <title id="t">Результаты xrperf: время кадра на видеокарте в S.T.A.L.K.E.R. Anomaly VR</title>
-  <desc id="d">Время кадра на видеокарте падает с 25,5 мс в родном разрешении с исходными настройками до 11,0 мс с FSR 85% и MSAA 2x, ниже бюджета 16,7 мс для 60 Гц.</desc>
+  <desc id="d">В родном разрешении рекомендуемые настройки графики снижают время кадра на видеокарте с 25,5 до 13,4 мс, затем xrperf с FSR 85% доводит его до 11,0 мс, ниже бюджета 16,7 мс для 60 Гц.</desc>
   <style>
     text { font-family: "Segoe UI", -apple-system, Helvetica, Arial, sans-serif; fill: #e8eaed; }
     .muted { fill: #9aa3ad; }
     .label { font-size: 15px; }
     .value { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
   </style>
-  <rect width="900" height="500" rx="16" fill="#12161c"/>
+  <rect width="900" height="440" rx="16" fill="#12161c"/>
 
   <text x="40" y="52" font-size="24" font-weight="600">xrperf для S.T.A.L.K.E.R. Anomaly VR</text>
-  <text x="40" y="80" font-size="15" class="muted">Пример полной настройки: xrperf + графика · время кадра на видеокарте, меньше — лучше</text>
+  <text x="40" y="80" font-size="15" class="muted">Время кадра на видеокарте, меньше — лучше · одно сохранение и точка для всех замеров</text>
 
   <rect x="40" y="104" width="260" height="78" rx="10" fill="#1b2129"/>
-  <text x="58" y="132" font-size="13" class="muted">Время кадра на видеокарте</text>
-  <text x="58" y="164" font-size="26" font-weight="600">25,5 → 11,0 мс</text>
+  <text x="58" y="132" font-size="13" class="muted">Настройки графики</text>
+  <text x="58" y="164" font-size="26" font-weight="600">−47%</text>
   <rect x="320" y="104" width="260" height="78" rx="10" fill="#1b2129"/>
-  <text x="338" y="132" font-size="13" class="muted">Меньше времени на кадр</text>
-  <text x="338" y="164" font-size="26" font-weight="600" fill="#3ccf95">−57%</text>
+  <text x="338" y="132" font-size="13" class="muted">xrperf, FSR на 85%</text>
+  <text x="338" y="164" font-size="26" font-weight="600" fill="#3ccf95">−18%</text>
   <rect x="600" y="104" width="260" height="78" rx="10" fill="#1b2129"/>
-  <text x="618" y="132" font-size="13" class="muted">На 60 Гц, с MSAA 2x</text>
-  <text x="618" y="164" font-size="22" font-weight="600">Стабильные 60 FPS</text>
+  <text x="618" y="132" font-size="13" class="muted">Итого, стабильные 60 FPS</text>
+  <text x="618" y="164" font-size="26" font-weight="600">25,5 → 11,0 мс</text>
 
-  <line x1="634" y1="212" x2="634" y2="420" stroke="#9aa3ad" stroke-width="1.5" stroke-dasharray="5 5"/>
-  <text x="634" y="440" font-size="13" class="muted" text-anchor="middle">Бюджет кадра на 60 Гц · 16,7 мс</text>
+  <line x1="634" y1="212" x2="634" y2="362" stroke="#9aa3ad" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <text x="634" y="382" font-size="13" class="muted" text-anchor="middle">Бюджет кадра на 60 Гц · 16,7 мс</text>
 
   <text x="40" y="243" class="label">Родное, исходная графика</text>
   <rect x="300" y="226" width="510" height="26" rx="4" fill="#e34948"/>
   <text x="820" y="244" class="value">25,5 мс</text>
 
-  <text x="40" y="295" class="label">+ FSR на 77% разрешения</text>
-  <rect x="300" y="278" width="350" height="26" rx="4" fill="#eda100"/>
-  <text x="660" y="296" class="value">17,5 мс</text>
+  <text x="40" y="295" class="label">Родное, рекомендуемая графика</text>
+  <rect x="300" y="278" width="268" height="26" rx="4" fill="#2a78d6"/>
+  <text x="578" y="296" class="value">13,4 мс</text>
 
-  <text x="40" y="347" class="label">+ настройки автора мода</text>
-  <rect x="300" y="330" width="194" height="26" rx="4" fill="#2a78d6"/>
-  <text x="504" y="348" class="value">9,7 мс</text>
+  <text x="40" y="347" class="label" font-weight="600">+ xrperf, FSR на 85%</text>
+  <rect x="300" y="330" width="220" height="26" rx="4" fill="#1baf7a"/>
+  <text x="530" y="348" class="value">11,0 мс</text>
 
-  <text x="40" y="399" class="label" font-weight="600">FSR 85% + MSAA 2x</text>
-  <rect x="300" y="382" width="220" height="26" rx="4" fill="#1baf7a"/>
-  <text x="530" y="400" class="value">11,0 мс</text>
-
-  <text x="40" y="478" font-size="12" class="muted">RTX 5070 Laptop · шлем WMR, 2576×2520 на глаз · VR AoE 0.5.0 · одно сохранение и точка для всех замеров</text>
+  <text x="40" y="420" font-size="12" class="muted">RTX 5070 Laptop · шлем WMR, 2576×2520 на глаз · VR AoE 0.5.0 · MSAA 2x во всех трёх замерах</text>
 </svg>

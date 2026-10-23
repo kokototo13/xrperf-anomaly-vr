@@ -13,26 +13,24 @@ It works like [openvr_fsr](https://github.com/fholger/openvr_fsr) or vrperfkit, 
 
 **xrperf on its own gives up to ~30% more performance when your GPU is the bottleneck.** If the game is limited by the CPU instead, expect less.
 
-Measured on one system (RTX 5070 Laptop GPU, WMR headset at 2576×2520 per eye, VR AoE 0.5.0), same save and spot for every run:
+![Graphics settings −47%, xrperf −18%, total 25.5 → 11.0 ms](docs/results.svg)
 
-| xrperf feature | Measured effect |
-|---|---|
-| FSR / NIS at 77% resolution | −31% GPU time per frame |
-| FSR / NIS at 85% resolution (default) | less: roughly −15–20% |
-| Upscaler cost | FSR ~0.8 ms, NIS ~1.0 ms for both eyes |
+Measured on one system (RTX 5070 Laptop GPU, WMR headset at 2576×2520 per eye, VR AoE 0.5.0, 60 Hz), same save and spot for every run, MSAA 2x in every run:
 
-### Full tuning example: xrperf plus graphics settings
-
-![Full tuning example: 25.5 ms before, 11.0 ms after](docs/results.svg)
-
-| Step | GPU time per frame |
+| Setup | GPU time per frame |
 |---|---|
 | Native resolution, original graphics settings | 25.5 ms |
-| + FSR at 77% resolution (xrperf) | 17.5 ms |
-| + graphics settings recommended by the mod author | 9.7 ms |
-| **FSR 85% (xrperf) + MSAA 2x** | **11.0 ms** |
+| Native resolution, [recommended graphics settings](#game-graphics-settings) | 13.4 ms (−47%) |
+| **Recommended graphics + xrperf (FSR at 85%)** | **11.0 ms (another −18%)** |
 
-Most of this total came from the graphics settings, not from xrperf. The last step spends part of the savings on image quality: MSAA 2x and a higher 85% resolution. The end result holds a steady 60 FPS (3 missed frames out of 1084) with MSAA on; the frame budget at 60 Hz is 16.7 ms. Your numbers will differ with other GPUs, headsets and scenes.
+What xrperf itself gives, with the game's settings unchanged:
+
+| render_scale | GPU time per frame |
+|---|---|
+| 0.85 (default) | −18% |
+| 0.77 | −31% |
+
+The upscaler itself costs about 0.8 ms (FSR) or 1.0 ms (NIS) for both eyes, already included above. The final setup holds a steady 60 FPS (3 missed frames out of 1084); the frame budget at 60 Hz is 16.7 ms. Your numbers will differ with other GPUs, headsets and scenes.
 
 ## FSR or NIS?
 
