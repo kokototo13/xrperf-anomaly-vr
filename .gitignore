@@ -1,0 +1,7 @@
+build/
+dist/
+runs/
+logs/
+external/openvr/
+*.user
+.vs/

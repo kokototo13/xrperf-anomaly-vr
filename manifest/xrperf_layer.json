@@ -1,0 +1,11 @@
+{
+    "file_format_version": "1.0.0",
+    "api_layer": {
+        "name": "XR_APILAYER_XRPERF_anomaly",
+        "library_path": ".\\xrperf_layer.dll",
+        "api_version": "1.0",
+        "implementation_version": "1",
+        "description": "Performance layer for S.T.A.L.K.E.R. Anomaly VR",
+        "disable_environment": "XRPERF_DISABLE"
+    }
+}
