@@ -85,7 +85,7 @@ OpenXR-слой, который ускоряет [S.T.A.L.K.E.R. Anomaly](https:
 | Качество теней солнца | Низкое | самое дорогое в VR |
 | Каскады / дальность теней | короче | снижать первым, по совету автора мода |
 | Объёмный свет | Выкл | дорогой, в VR считается дважды |
-| Лучи солнца (god rays) | Выкл | то же |
+| Лучи солнца (god rays) | Выкл в меню или Низкое | то же; в `user.ltx` минимальное допустимое значение — `st_opt_low` |
 | SSAO / HBAO / GTAO | Выкл или минимум | |
 | Глубина резкости (DoF) | Выкл | в VR не нужна |
 | SSR (отражения) | Выкл или минимум | в VR частично не работает |
@@ -108,7 +108,7 @@ OpenXR-слой, который ускоряет [S.T.A.L.K.E.R. Anomaly](https:
 r2_sun_quality st_opt_low
 ssfx_shadow_cascades (15.000000, 30.000000, 80.000000)
 r2_volumetric_lights off
-r2_sunshafts_quality st_opt_off
+r2_sunshafts_quality st_opt_low
 r2_ssao_mode disabled
 r2_dof_enable off
 r3_msaa 2x

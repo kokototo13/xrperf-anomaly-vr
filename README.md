@@ -85,7 +85,7 @@ The layer alone gives up to about 30%. The biggest single win in the results abo
 | Sun shadow quality | Low | biggest cost in VR |
 | Shadow cascades / distance | shorter | lower first, per the mod author |
 | Volumetric lights | Off | expensive, rendered twice in VR |
-| God rays (sun shafts) | Off | same |
+| God rays (sun shafts) | Off in the menu, or Low | same; in `user.ltx` the lowest accepted value is `st_opt_low` |
 | SSAO / HBAO / GTAO | Off or minimum | |
 | Depth of field | Off | never useful in VR |
 | SSR (reflections) | Off or minimum | partly broken in VR anyway |
@@ -108,7 +108,7 @@ Textures, model detail and view distance can stay high: they cost VRAM more than
 r2_sun_quality st_opt_low
 ssfx_shadow_cascades (15.000000, 30.000000, 80.000000)
 r2_volumetric_lights off
-r2_sunshafts_quality st_opt_off
+r2_sunshafts_quality st_opt_low
 r2_ssao_mode disabled
 r2_dof_enable off
 r3_msaa 2x
